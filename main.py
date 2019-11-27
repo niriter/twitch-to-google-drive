@@ -7,10 +7,10 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
 
-convert = True          # Конвертировать стрим в mp4 или сохранять в mkv
-save_drive = True       # Сохранять в облаке
-del_on_server = True    # Удалять видео после сохранения в облаке (mp4 или mkv)
-timeout = 60            # Время в секундах на запись (например: блоки по 60 секунд)
+convert = True          # Convert stream blocks into mp4
+save_drive = True       # Save in cloud
+del_on_server = True    # Delete stream blocks after cloud saving (mp4 or mkv)
+timeout = 60            # Time blocks recording (example: blocks by 60 seconds)
 
 
 
