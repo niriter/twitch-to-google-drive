@@ -7,15 +7,16 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
 
+global convert
+global save_drive
+global del_on_server
+global timeout
+
 convert = True          # Convert stream blocks into mp4
 save_drive = True       # Save in cloud
 del_on_server = True    # Delete stream blocks after cloud saving (mp4 or mkv)
 timeout = 60            # Time blocks recording (example: blocks by 60 seconds)
 
-global convert
-global save_drive
-global del_on_server
-global timeout
 
 
 class WorkerStopException(Exception):
