@@ -12,6 +12,10 @@ save_drive = True       # Save in cloud
 del_on_server = True    # Delete stream blocks after cloud saving (mp4 or mkv)
 timeout = 60            # Time blocks recording (example: blocks by 60 seconds)
 
+global convert
+global save_drive
+global del_on_server
+global timeout
 
 
 class WorkerStopException(Exception):
@@ -39,7 +43,7 @@ class Streams():
             gauth.GetFlow()
             gauth.flow.params.update({'access_type': 'offline'})
             gauth.flow.params.update({'approval_prompt': 'force'})
-            gauth.LocalWebserverAuth()
+            gauth.CommandLineAuth()
         elif gauth.access_token_expired:
             gauth.Refresh()
         else:
@@ -129,7 +133,6 @@ class Streams():
         return True
 
 if __name__ == "__main__":
-    global timeout
     streams = Streams(timeout=timeout)
     streams.load_tasks()
     streams.start_parsing()
