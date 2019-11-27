@@ -22,6 +22,10 @@ timeout = 60            # Time blocks recording (example: blocks by 60 seconds)
 class WorkerStopException(Exception):
     pass
 
+class ConvertError(Exception):
+    print('Error in converting file')
+    pass
+
 class Streams():
     def __init__(self, file_name='streams.txt', timeout=60):
         self.file_name = file_name
@@ -109,7 +113,7 @@ class Streams():
             print("Converted stream part")
             return new_file
         except:
-            raise ConvertError('Error in converting file')
+            raise ConvertError()
 
     def send_to_drive(self, file_name, parent):
         print('Started Upload File')
