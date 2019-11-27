@@ -79,7 +79,7 @@ class Streams():
                 ffmpeg_process.kill()
                 print('New stream part')
                 try:
-                    functions = multiprocessing.Process(target=self.functions_while_record, args=(str(stream.strip('/').split('/')[-1] + '_part_' + str(part))+'.mkv', ))
+                    functions = multiprocessing.Process(target=self.functions_while_record, args=(str(stream.strip('/').split('/')[-1] + '_part_' + str(part))+'.mkv', stream))
                     functions.start()
                 except:
                     pass
@@ -89,7 +89,7 @@ class Streams():
                 sleep(5)
                 continue
 
-    def functions_while_record(self, file):
+    def functions_while_record(self, file, stream):
         global convert
         if convert:
             new_file = file.split('.')[0]+'.mp4'
@@ -99,7 +99,7 @@ class Streams():
             new_file = file
         global save_drive
         if save_drive:
-            self.send_to_drive(new_file, new_file.split('_part_')[0])
+            self.send_to_drive(new_file, stream.split('/')[-1])
         global del_on_server
         if del_on_server:
             os.remove(new_file)
