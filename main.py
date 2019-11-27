@@ -1,6 +1,6 @@
 import streamlink
 from subprocess import Popen
-import multiprocessing
+from multiprocessing import Process as multiproc
 from time import sleep
 import os
 from pydrive.auth import GoogleAuth
@@ -63,10 +63,11 @@ class Streams():
     def start_parsing(self):
         self.google_login()
         self.streams = {}
-        print("Start_pasers")
+        print("Start_parsers")
+        pprint(self.tasks)
         for indx, stream in enumerate(self.tasks):
             self.streams[indx] = {'link': stream}
-            self.streams[indx]['process'] = multiprocessing.Process(target=self.watcher, args=(stream, ))
+            self.streams[indx]['process'] = multiproc(target=self.watcher, args=(stream, ))
             self.streams[indx]['process'].start()
 
     def watcher(self, stream):
@@ -75,15 +76,13 @@ class Streams():
                 if not ('part') in vars():
                     part = 0
                 stream_url = streamlink.streams(stream)['best'].url
-                ffmpeg_process = Popen(["ffmpeg", "-i", stream_url, "-c", "copy", str(stream.strip('/').split('/')[-1] + '_part_' + str(part))+'.mkv'])
+                file_name = str(stream.strip('/').split('/')[-1] + '_part_' + str(part))+'.mkv'
+                ffmpeg_process = Popen(["ffmpeg", "-i", stream_url, "-c", "copy", file_name])
                 sleep(self.time_of_parts)
                 ffmpeg_process.kill()
                 print('New stream part')
-                try:
-                    functions = multiprocessing.Process(target=self.functions_while_record, args=(str(stream.strip('/').split('/')[-1] + '_part_' + str(part))+'.mkv', stream))
-                    functions.start()
-                except:
-                    pass
+                functions = multiproc(target=self.functions_while_record, args=(file_name, stream))
+                functions.start()
                 part += 1
             except:
                 print(stream + " Have not live streams yet")
@@ -94,7 +93,7 @@ class Streams():
         global convert
         if convert:
             new_file = file.split('.')[0]+'.mp4'
-            self.convert(file, new_file)
+            self.convert_file(file, new_file)
             os.remove(file)
         else:
             new_file = file
@@ -106,10 +105,10 @@ class Streams():
             os.remove(new_file)
         raise WorkerStopException()
 
-    def convert(self, old_file, new_file):
+    def convert_file(self, old_file, new_file):
         try:
-            convert = Popen(["ffmpeg", "-i", old_file, "-codec", "copy", new_file])
-            convert.wait()
+            converter = Popen(["ffmpeg", "-i", old_file, "-codec", "copy", new_file])
+            converter.wait()
             print("Converted stream part")
             return new_file
         except:
@@ -119,6 +118,7 @@ class Streams():
         print('Started Upload File')
         if parent:
             file_list = self.drive.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
+
             parent_id = False
             for file1 in file_list:
                 if file1['title'] == parent:
@@ -127,12 +127,16 @@ class Streams():
                 folder = self.drive.CreateFile({'title': parent, "mimeType": "application/vnd.google-apps.folder"})
                 folder.Upload()
                 parent_id = folder['id']
+
             subparent_id = False
-            for file2 in self.drive.ListFile({'q': "'"+parent_id+"' in parents and trashed=false"}).GetList():
-                if file2['title'] == str(time.strftime("%Y.%m.%d")):
-                    subparent_id = file2['id']
+            for f in self.drive.ListFile({'q': "'%s' in parents and trashed=false" % parent}).GetList():
+                if f['mimeType'] == 'application/vnd.google-apps.folder':  # if folder
+                    if f['title'] == str(time.strftime("%Y.%m.%d")):
+                        subparent_id = f['id']
             if not subparent_id:
-                folder2 = self.drive.CreateFile({'title': str(time.strftime("%Y.%m.%d")), "mimeType": "application/vnd.google-apps.folder", 'parents':[{'id':parent_id}]})
+                folder2 = self.drive.CreateFile(
+                    {'title': str(time.strftime("%Y.%m.%d")), "mimeType": "application/vnd.google-apps.folder",
+                     'parents': [{'id': parent_id}]})
                 folder2.Upload()
                 subparent_id = folder2['id']
             file2 = self.drive.CreateFile({'parents': [{'id': subparent_id}]})
@@ -145,6 +149,9 @@ class Streams():
         print('Complete Upload File')
         return True
 
+    def get_last_block_id(self, parent):
+        pass
+
     def exit(self):
         for stream in self.streams:
             stream['process'].terminate()
@@ -152,8 +159,10 @@ class Streams():
 
 if __name__ == "__main__":
     streams = Streams(timeout=timeout)
-    try:
-        streams.load_tasks()
-        streams.start_parsing()
-    except KeyboardInterrupt:
-        streams.exit()
+    # try:
+    #     streams.load_tasks()
+    #     streams.start_parsing()
+    # except KeyboardInterrupt:
+    #     streams.exit()
+    streams.load_tasks()
+    streams.start_parsing()
