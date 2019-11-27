@@ -136,7 +136,15 @@ class Streams():
         print('Complete Upload File')
         return True
 
+    def exit(self):
+        for stream in self.streams:
+            stream['process'].terminate()
+            stream['process'].join()
+
 if __name__ == "__main__":
     streams = Streams(timeout=timeout)
-    streams.load_tasks()
-    streams.start_parsing()
+    try:
+        streams.load_tasks()
+        streams.start_parsing()
+    except KeyboardInterrupt:
+        streams.exit()
