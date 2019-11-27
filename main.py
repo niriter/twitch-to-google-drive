@@ -73,17 +73,16 @@ class Streams():
             try:
                 if not ('part') in vars():
                     part = 0
-                else:
-                    try:
-                        functions = multiprocessing.Process(target=self.functions_while_record, args=(str(stream.strip('/').split('/')[-1] + '_part_' + str(part-1))+'.mkv', ))
-                        functions.start()
-                    except:
-                        pass
                 stream_url = streamlink.streams(stream)['best'].url
                 ffmpeg_process = Popen(["ffmpeg", "-i", stream_url, "-c", "copy", str(stream.strip('/').split('/')[-1] + '_part_' + str(part))+'.mkv'])
                 sleep(self.time_of_parts)
                 ffmpeg_process.kill()
                 print('New stream part')
+                try:
+                    functions = multiprocessing.Process(target=self.functions_while_record, args=(str(stream.strip('/').split('/')[-1] + '_part_' + str(part))+'.mkv', ))
+                    functions.start()
+                except:
+                    pass
                 part += 1
             except:
                 print(stream + " Have not live streams yet")
