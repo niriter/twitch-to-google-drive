@@ -81,7 +81,7 @@ class Streams():
                 print('New stream part')
                 part += 1
             except:
-                print(stream + "Have not live streams yet")
+                print(stream + " Have not live streams yet")
                 sleep(5)
                 continue
 
