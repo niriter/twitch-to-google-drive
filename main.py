@@ -10,7 +10,7 @@ from pydrive.drive import GoogleDrive
 convert = True          # Конвертировать стрим в mp4 или сохранять в mkv
 save_drive = True       # Сохранять в облаке
 del_on_server = True    # Удалять видео после сохранения в облаке (mp4 или mkv)
-
+timeout = 60            # Время в секундах на запись (например: блоки по 60 секунд)
 
 
 
@@ -129,6 +129,7 @@ class Streams():
         return True
 
 if __name__ == "__main__":
-    streams = Streams()
+    global timeout
+    streams = Streams(timeout=timeout)
     streams.load_tasks()
     streams.start_parsing()
