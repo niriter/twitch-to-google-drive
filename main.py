@@ -6,6 +6,7 @@ import os
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 import time
+from pprint import pprint
 
 
 global convert
@@ -24,7 +25,6 @@ class WorkerStopException(Exception):
     pass
 
 class ConvertError(Exception):
-    print('Error in converting file')
     pass
 
 class Streams():
@@ -62,13 +62,15 @@ class Streams():
 
     def start_parsing(self):
         self.google_login()
-        self.streams = {}
+        self.streams = []
         print("Start_parsers")
         pprint(self.tasks)
         for indx, stream in enumerate(self.tasks):
-            self.streams[indx] = {'link': stream}
-            self.streams[indx]['process'] = multiproc(target=self.watcher, args=(stream, ))
-            self.streams[indx]['process'].start()
+            tmp_data = {}
+            tmp_data['link'] = stream
+            tmp_data['process'] = multiproc(target=self.watcher, args=(stream, ))
+            tmp_data['process'].start()
+            self.streams.append(tmp_data)
 
     def watcher(self, stream):
         while True:
@@ -129,7 +131,7 @@ class Streams():
                 parent_id = folder['id']
 
             subparent_id = False
-            for f in self.drive.ListFile({'q': "'%s' in parents and trashed=false" % parent}).GetList():
+            for f in self.drive.ListFile({'q': "'%s' in parents and trashed=false" % parent_id}).GetList():
                 if f['mimeType'] == 'application/vnd.google-apps.folder':  # if folder
                     if f['title'] == str(time.strftime("%Y.%m.%d")):
                         subparent_id = f['id']
