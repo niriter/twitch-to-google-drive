@@ -5,6 +5,7 @@ from time import sleep
 import os
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+import time
 
 
 global convert
@@ -126,7 +127,15 @@ class Streams():
                 folder = self.drive.CreateFile({'title': parent, "mimeType": "application/vnd.google-apps.folder"})
                 folder.Upload()
                 parent_id = folder['id']
-            file2 = self.drive.CreateFile({'parents': [{'id': parent_id}]})
+            subparent_id = False
+            for file2 in self.drive.ListFile({'q': "'"+parent_id+"' in parents and trashed=false"}).GetList():
+                if file2['title'] == str(time.strftime("%Y.%m.%d")):
+                    subparent_id = file2['id']
+            if not subparent_id:
+                folder2 = self.drive.CreateFile({'title': str(time.strftime("%Y.%m.%d")), "mimeType": "application/vnd.google-apps.folder", 'parents':[{'id':parent_id}]})
+                folder2.Upload()
+                subparent_id = folder2['id']
+            file2 = self.drive.CreateFile({'parents': [{'id': subparent_id}]})
             file2.SetContentFile(file_name)
             file2.Upload()
         else:
